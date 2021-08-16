@@ -181,6 +181,13 @@ typedef enum {
 #define PBUF_FLAG_LLMCAST   0x10U
 /** indicates this pbuf includes a TCP FIN flag */
 #define PBUF_FLAG_TCP_FIN   0x20U
+#if LWIP_CHECKSUM_PARTIAL
+/** indicates this pbuf contains a partially computed checksum */
+#define PBUF_FLAG_CSUM_PARTIAL 0x40U
+#endif /* LWIP_CHECKSUM_PARTIAL */
+/** mask for header flags that can only be set on pbuf heads and
+    that are copied on pbuf_copy() and pbuf_clone() */
+#define PBUF_HDR_FLAGS_MASK 0x40U
 
 /** Main packet buffer struct */
 struct pbuf {
@@ -209,6 +216,22 @@ struct pbuf {
 
   /** misc flags */
   u8_t flags;
+
+#if LWIP_CHECKSUM_PARTIAL
+  /** when PBUF_FLAG_CSUM_PARTIAL is set, `csum_start` points to where
+      checksum computation needs to continue (e.g., offloaded by hardware).
+      `csum_offset` points to the checksum field within the pbuf. It is the
+      offset from `csum_start`. Please note that for a pbuf chain, the flag can
+      only be set once and with the first pbuf.
+      Please note that during protocol parsing `csum_start` can become negative:
+      This means that currently hidden bytes of an encapsulated header have to
+      included to compute the partial checksum (e.g., source and destination IP
+      addresses of an IPv4 or IPv6 header). An input function of an netif driver
+      should never set `csum_start` to a negative value.
+   */
+  s32_t csum_start;
+  u16_t csum_offset;
+#endif /* LWIP_CHECKSUM_PARTIAL */
 
   /**
    * the reference count always equals the number of pointers

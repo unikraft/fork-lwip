@@ -2357,6 +2357,14 @@
 #if !defined LWIP_CHECKSUM_ON_COPY || defined __DOXYGEN__
 #define LWIP_CHECKSUM_ON_COPY           0
 #endif
+
+/**
+ * LWIP_CHECKSUM_PARTIAL==1: Extend pbufs to support handling packets with
+ * partial computed checksums.
+ */
+#if !defined LWIP_CHECKSUM_PARTIAL || defined __DOXYGEN__
+#define LWIP_CHECKSUM_PARTIAL           0
+#endif
 /**
  * @}
  */

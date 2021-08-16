@@ -523,6 +523,11 @@ pbuf_add_header_impl(struct pbuf *p, size_t header_size_increment, u8_t force)
   p->len = (u16_t)(p->len + increment_magnitude);
   p->tot_len = (u16_t)(p->tot_len + increment_magnitude);
 
+#if LWIP_CHECKSUM_PARTIAL
+  if ((p->flags & PBUF_FLAG_CSUM_PARTIAL)
+      && ((p->csum_start != 0x0) || (p->csum_offset != 0x0)))
+    p->csum_start = (s32_t)(p->csum_start + increment_magnitude);
+#endif /* LWIP_CHECKSUM_PARTIAL */
 
   return 0;
 }
@@ -605,6 +610,12 @@ pbuf_remove_header(struct pbuf *p, size_t header_size_decrement)
   /* modify pbuf length fields */
   p->len = (u16_t)(p->len - increment_magnitude);
   p->tot_len = (u16_t)(p->tot_len - increment_magnitude);
+
+#if LWIP_CHECKSUM_PARTIAL
+  if ((p->flags & PBUF_FLAG_CSUM_PARTIAL)
+      && ((p->csum_start != 0x0) || (p->csum_offset != 0x0)))
+    p->csum_start = (s32_t)(p->csum_start - increment_magnitude);
+#endif /* LWIP_CHECKSUM_PARTIAL */
 
   LWIP_DEBUGF(PBUF_DEBUG | LWIP_DBG_TRACE, ("pbuf_remove_header: old %p new %p (%"U16_F")\n",
               (void *)payload, (void *)p->payload, increment_magnitude));
@@ -857,6 +868,9 @@ pbuf_cat(struct pbuf *h, struct pbuf *t)
   LWIP_ERROR("(h != NULL) && (t != NULL) (programmer violates API)",
              ((h != NULL) && (t != NULL)), return;);
 
+  /* header flags can only be set on heading pbuf */
+  LWIP_ASSERT("header flags set in tailing pbuf of a chain", !(t->flags & PBUF_HDR_FLAGS_MASK));
+
   /* proceed to last pbuf of chain */
   for (p = h; p->next != NULL; p = p->next) {
     /* add total length of second chain to all totals of first chain */
@@ -960,11 +974,26 @@ pbuf_dechain(struct pbuf *p)
 err_t
 pbuf_copy(struct pbuf *p_to, const struct pbuf *p_from)
 {
+  err_t status;
   LWIP_DEBUGF(PBUF_DEBUG | LWIP_DBG_TRACE, ("pbuf_copy(%p, %p)\n",
               (const void *)p_to, (const void *)p_from));
 
   LWIP_ERROR("pbuf_copy: invalid source", p_from != NULL, return ERR_ARG;);
-  return pbuf_copy_partial_pbuf(p_to, p_from, p_from->tot_len, 0);
+
+  status = pbuf_copy_partial_pbuf(p_to, p_from, p_from->tot_len, 0);
+  if (status != ERR_OK)
+    goto out;
+
+  /* copy over DATA_VALID and CSUM_PARTIAL flag */
+  p_to->flags |= (p_from->flags & PBUF_HDR_FLAGS_MASK);
+#if LWIP_CHECKSUM_PARTIAL
+  if (p_from->flags & PBUF_FLAG_CSUM_PARTIAL) {
+    p_to->csum_start = p_from->csum_start;
+    p_to->csum_offset = p_from->csum_offset;
+  }
+#endif /* LWIP_CHECKSUM_PARTIAL */
+out:
+  return status;
 }
 
 /**
