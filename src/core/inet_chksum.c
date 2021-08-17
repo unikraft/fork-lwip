@@ -606,3 +606,144 @@ lwip_chksum_copy(void *dst, const void *src, u16_t len)
   return LWIP_CHKSUM(dst, len);
 }
 #endif /* (LWIP_CHKSUM_COPY_ALGORITHM == 1) */
+
+#if LWIP_CHECKSUM_PARTIAL
+#if LWIP_IPV4
+/*
+ * inet_chksum_pseudohdr
+ *
+ * Computes a partial IPV4/IPv6 internet checksum that covers only the
+ * protocol pseudo header (UDP, TCP). The parameters `proto`, `proto_len`
+ * can be set to `0x0` and `src` and `dest` can be set to `NULL`.
+ * This enables computing a partial checksum of the pseudo header.
+ * Skipped fields can be added later with `ip_chksum_pseudohdr_add16()`.
+ *
+ * @param proto ip protocol (pseudo header)
+ * @param proto_len length of the ip data part (pseudo header)
+ * @param src source IPv4 address (pseudo header)
+ * @param dest destination IPv4 address (pseudo header)
+ * @return checksum (as u16_t) to be saved directly in the protocol header
+ */
+u16_t
+inet_chksum_pseudohdr(u8_t proto, u16_t proto_len,
+                      const ip4_addr_t *src, const ip4_addr_t *dest)
+{
+  u32_t acc;
+  u32_t addr;
+
+  acc  = (u32_t)lwip_htons((u16_t)proto);
+  acc += (u32_t)lwip_htons(proto_len);
+
+  if (src) {
+    addr = ip4_addr_get_u32(src);
+    acc += (addr & 0xffffUL);
+    acc += ((addr >> 16) & 0xffffUL);
+  }
+  if (dest) {
+    addr = ip4_addr_get_u32(dest);
+    acc += (addr & 0xffffUL);
+    acc += ((addr >> 16) & 0xffffUL);
+  }
+
+  /* Fold 32-bit sum to 16 bits
+     calling this twice is probably faster than if statements... */
+  acc = FOLD_U32T(acc);
+  acc = FOLD_U32T(acc);
+  return (acc & 0xffffUL);
+}
+#endif /* LWIP_IPV4 */
+
+#if LWIP_IPV6
+/*
+ * ip6_chksum_pseudohdr
+ *
+ * Computes a partial IPv6 internet checksum that covers only the
+ * protocol pseudo header (UDP, TCP). The parameters `proto`, `proto_len`
+ * can be set to `0x0` and `src` and `dest` can be set to `NULL`.
+ * This enables computing a partial checksum of the pseudo header.
+ * Skipped fields can be added later with `ip_chksum_pseudohdr_add16()`.
+ *
+ * @param proto ip protocol (pseudo header)
+ * @param proto_len length of the ip data part (pseudo header)
+ * @param src source IPv6 address (pseudo header)
+ * @param dest destination IPv6 address (pseudo header)
+ * @return checksum (as u16_t) to be saved directly in the protocol header
+ */
+u16_t
+ip6_chksum_pseudohdr(u8_t proto, u16_t proto_len,
+                     const ip6_addr_t *src, const ip6_addr_t *dest)
+{
+  u32_t acc;
+  u32_t addr;
+  u8_t addr_part;
+
+  acc  = (u32_t)lwip_htons((u16_t)proto);
+  acc += (u32_t)lwip_htons(proto_len);
+
+  if (src) {
+    for (addr_part = 0; addr_part < 4; addr_part++) {
+      addr = src->addr[addr_part];
+      acc += (addr & 0xffffUL);
+      acc += ((addr >> 16) & 0xffffUL);
+    }
+  }
+  if (dest) {
+    for (addr_part = 0; addr_part < 4; addr_part++) {
+      addr = dest->addr[addr_part];
+      acc += (addr & 0xffffUL);
+      acc += ((addr >> 16) & 0xffffUL);
+    }
+  }
+
+  /* Fold 32-bit sum to 16 bits
+     calling this twice is probably faster than if statements... */
+  acc = FOLD_U32T(acc);
+  acc = FOLD_U32T(acc);
+  return (acc & 0xffffUL);
+}
+#endif /* LWIP_IPV6 */
+
+/*
+ * ip_chksum_pseudohdr
+ *
+ * Computes a partial IPV4/IPv6 internet checksum that covers only the
+ * protocol pseudo header (UDP, TCP). The parameters `proto`, `proto_len`
+ * can be set to `0x0` and `src` and `dest` can be set to `NULL`.
+ * This enables computing a partial checksum of the pseudo header.
+ * Skipped fields can be added later with `ip_chksum_pseudohdr_add16()`.
+ *
+ * @param proto ip protocol (pseudo header)
+ * @param proto_len length of the ip data part (pseudo header)
+ * @param src source ip address (pseudo header)
+ * @param dest destination ip address (pseudo header)
+ * @return checksum (as u16_t) to be saved directly in the protocol header
+ */
+u16_t
+ip_chksum_pseudohdr(u8_t proto, u16_t proto_len,
+                    const ip_addr_t *src, const ip_addr_t *dest)
+{
+#if LWIP_IPV6
+  if (src && IP_IS_V6(src)) {
+    const ip6_addr_t *src6;
+    const ip6_addr_t *dest6;
+
+    src6  = (src  != NULL) ? ip_2_ip6(src)  : NULL;
+    dest6 = (dest != NULL) ? ip_2_ip6(dest) : NULL;
+    return ip6_chksum_pseudohdr(proto, proto_len, src6, dest6);
+  }
+#endif /* LWIP_IPV6 */
+#if LWIP_IPV4 && LWIP_IPV6
+  else
+#endif /* LWIP_IPV4 && LWIP_IPV6 */
+#if LWIP_IPV4
+  {
+    const ip4_addr_t *src4;
+    const ip4_addr_t *dest4;
+
+    src4  = (src  != NULL) ? ip_2_ip4(src)  : NULL;
+    dest4 = (dest != NULL) ? ip_2_ip4(dest) : NULL;
+    return inet_chksum_pseudohdr(proto, proto_len, src4, dest4);
+  }
+#endif /* LWIP_IPV4 */
+}
+#endif /* LWIP_CHECKSUM_PARTIAL */
