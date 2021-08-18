@@ -1597,8 +1597,24 @@ tcp_output_segment(struct tcp_seg *seg, struct tcp_pcb *pcb, struct netif *netif
     }
 #endif /* TCP_CHECKSUM_ON_COPY_SANITY_CHECK */
 #else /* TCP_CHECKSUM_ON_COPY */
-    seg->tcphdr->chksum = ip_chksum_pseudo(seg->p, IP_PROTO_TCP,
-                                           seg->p->tot_len, &pcb->local_ip, &pcb->remote_ip);
+#if TCP_CHECKSUM_PARTIAL
+    IF__NETIF_CHECKSUM_ENABLED(netif, NETIF_CHECKSUM_PARTIAL_TCP) {
+      u32_t acc = pcb->chksum_base;
+
+      /* add proto length to pre-computed pseudo header checksum */
+      acc += lwip_htons(seg->p->tot_len);
+      acc = FOLD_U32T(acc);
+      acc = FOLD_U32T(acc);
+      seg->tcphdr->chksum = (u16_t)(acc & 0xffffUL);
+      seg->p->flags |= PBUF_FLAG_CSUM_PARTIAL;
+      seg->p->csum_start = 0;
+      seg->p->csum_offset = TCPH_CHKSUM_OFFSET;
+    } else
+#endif /* TCP_CHECKSUM_PARTIAL */
+    {
+      seg->tcphdr->chksum = ip_chksum_pseudo(seg->p, IP_PROTO_TCP,
+                                             seg->p->tot_len, &pcb->local_ip, &pcb->remote_ip);
+    }
 #endif /* TCP_CHECKSUM_ON_COPY */
   }
 #endif /* CHECKSUM_GEN_TCP */
@@ -1934,9 +1950,21 @@ tcp_output_control_segment(const struct tcp_pcb *pcb, struct pbuf *p,
     u8_t ttl, tos;
 #if CHECKSUM_GEN_TCP
     IF__NETIF_CHECKSUM_ENABLED(netif, NETIF_CHECKSUM_GEN_TCP) {
-      struct tcp_hdr *tcphdr = (struct tcp_hdr *)p->payload;
-      tcphdr->chksum = ip_chksum_pseudo(p, IP_PROTO_TCP, p->tot_len,
-                                        src, dst);
+#if TCP_CHECKSUM_PARTIAL
+      IF__NETIF_CHECKSUM_ENABLED(netif, NETIF_CHECKSUM_PARTIAL_TCP) {
+        struct tcp_hdr *tcphdr = (struct tcp_hdr *)p->payload;
+        tcphdr->chksum = ip_chksum_pseudohdr(IP_PROTO_TCP, p->tot_len,
+					     src, dst);
+        p->flags |= PBUF_FLAG_CSUM_PARTIAL;
+        p->csum_start = 0;
+        p->csum_offset = TCPH_CHKSUM_OFFSET;
+      } else
+#endif /* TCP_CHECKSUM_PARTIAL */
+      {
+        struct tcp_hdr *tcphdr = (struct tcp_hdr *)p->payload;
+        tcphdr->chksum = ip_chksum_pseudo(p, IP_PROTO_TCP, p->tot_len,
+                                          src, dst);
+      }
     }
 #endif
     if (pcb != NULL) {
