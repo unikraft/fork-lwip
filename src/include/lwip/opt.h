@@ -2367,6 +2367,18 @@
 #endif
 
 /**
+ * Turn on partial checksum generation for UDP headers when LWIP_CHECKSUM_PARTIAL is on
+ * and CHECKSUM_GEN_UDP is set. Otherwise, we disable partial checksumming.
+ */
+#if !defined CHECKSUM_PARTIAL_UDP || defined __DOXYGEN__
+#if LWIP_CHECKSUM_PARTIAL && (CHECKSUM_GEN_UDP || LWIP_CHECKSUM_CTRL_PER_NETIF)
+#define CHECKSUM_PARTIAL_UDP            1
+#else
+#define CHECKSUM_PARTIAL_UDP            0
+#endif
+#endif
+
+/**
  * Turn on partial checksum generation for TCP headers when LWIP_CHECKSUM_PARTIAL is on
  * and CHECKSUM_GEN_TCP is set. Otherwise, we disable partial checksumming.
  */

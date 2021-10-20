@@ -853,6 +853,16 @@ udp_sendto_if_src_chksum(struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *d
     IF__NETIF_CHECKSUM_ENABLED(netif, NETIF_CHECKSUM_GEN_UDP) {
       /* Checksum is mandatory over IPv6. */
       if (IP_IS_V6(dst_ip) || (pcb->flags & UDP_FLAGS_NOCHKSUM) == 0) {
+#if CHECKSUM_PARTIAL_UDP
+        IF__NETIF_CHECKSUM_ENABLED(netif, NETIF_CHECKSUM_PARTIAL_UDP) {
+          udphdr->chksum = ip_chksum_pseudohdr(IP_PROTO_UDP, q->tot_len,
+                                               src_ip, dst_ip);
+          q->flags |= PBUF_FLAG_CSUM_PARTIAL;
+          q->csum_start = 0;
+          q->csum_offset = UDPH_CHKSUM_OFFSET;
+        } else
+#endif /* CHECKSUM_PARTIAL_UDP */
+      {
         u16_t udpchksum;
 #if LWIP_CHECKSUM_ON_COPY
         if (have_chksum) {
@@ -873,7 +883,7 @@ udp_sendto_if_src_chksum(struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *d
           udpchksum = 0xffff;
         }
         udphdr->chksum = udpchksum;
-      }
+      } }
     }
 #endif /* CHECKSUM_GEN_UDP */
     ip_proto = IP_PROTO_UDP;

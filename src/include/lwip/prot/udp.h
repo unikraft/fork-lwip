@@ -44,6 +44,7 @@ extern "C" {
 #endif
 
 #define UDP_HLEN 8
+#define UDPH_CHKSUM_OFFSET 6
 
 /* Fields are (of course) in network byte order. */
 #ifdef PACK_STRUCT_USE_INCLUDES
