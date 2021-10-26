@@ -184,10 +184,12 @@ typedef enum {
 #if LWIP_CHECKSUM_PARTIAL
 /** indicates this pbuf contains a partially computed checksum */
 #define PBUF_FLAG_CSUM_PARTIAL 0x40U
+/** indicates this pbuf contains an already validated checksum */
+#define PBUF_FLAG_DATA_VALID 0x80U
 #endif /* LWIP_CHECKSUM_PARTIAL */
 /** mask for header flags that can only be set on pbuf heads and
     that are copied on pbuf_copy() and pbuf_clone() */
-#define PBUF_HDR_FLAGS_MASK 0x40U
+#define PBUF_HDR_FLAGS_MASK 0xC0U
 
 /** Main packet buffer struct */
 struct pbuf {

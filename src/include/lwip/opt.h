@@ -2360,7 +2360,8 @@
 
 /**
  * LWIP_CHECKSUM_PARTIAL==1: Extend pbufs to support handling packets with
- * partial computed checksums.
+ * partial computed checksums and the ability to mark packets that contain
+ * an already validated checksums.
  */
 #if !defined LWIP_CHECKSUM_PARTIAL || defined __DOXYGEN__
 #define LWIP_CHECKSUM_PARTIAL           0
