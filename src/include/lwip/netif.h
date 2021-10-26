@@ -148,6 +148,7 @@ enum lwip_internal_netif_client_data_index
 #if LWIP_CHECKSUM_PARTIAL
 #define NETIF_CHECKSUM_PARTIAL_UDP  0x2000
 #define NETIF_CHECKSUM_PARTIAL_TCP  0x4000
+#define NETIF_CHECKSUM_SKIPVALID_TCP 0x10000
 #endif /* LWIP_CHECKSUM_PARTIAL */
 #define NETIF_CHECKSUM_ENABLE_ALL   0x1FFF
 #define NETIF_CHECKSUM_DISABLE_ALL  0x0000
@@ -333,7 +334,7 @@ struct netif {
   const char*  hostname;
 #endif /* LWIP_NETIF_HOSTNAME */
 #if LWIP_CHECKSUM_CTRL_PER_NETIF
-  u16_t chksum_flags;
+  u32_t chksum_flags;
 #endif /* LWIP_CHECKSUM_CTRL_PER_NETIF*/
   /** maximum transfer unit (in bytes) */
   u16_t mtu;

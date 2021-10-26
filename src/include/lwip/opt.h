@@ -2390,6 +2390,19 @@
 #define CHECKSUM_PARTIAL_TCP            0
 #endif
 #endif
+
+/**
+ * Turn on skipping of checksum checking for TCP headers of pbufs marked with PBUF_FLAG_DATA_VALID
+ * when LWIP_CHECKSUM_PARTIAL is on and CHECKSUM_CHECK_TCP is set.
+ * Otherwise, we disable checksum shortcuts.
+ */
+#if !defined CHECKSUM_SKIPVALID_TCP || defined __DOXYGEN__
+#if LWIP_CHECKSUM_PARTIAL && (CHECKSUM_CHECK_TCP || LWIP_CHECKSUM_CTRL_PER_NETIF)
+#define CHECKSUM_SKIPVALID_TCP          1
+#else
+#define CHECKSUM_SKIPVALID_TCP          0
+#endif
+#endif
 /**
  * @}
  */

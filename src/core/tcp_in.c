@@ -158,6 +158,15 @@ tcp_input(struct pbuf *p, struct netif *inp)
 
 #if CHECKSUM_CHECK_TCP
   IF__NETIF_CHECKSUM_ENABLED(inp, NETIF_CHECKSUM_CHECK_TCP) {
+#if CHECKSUM_SKIPVALID_TCP
+    if ((!LWIP_CHECKSUM_CTRL_PER_NETIF ||
+         NETIF_CHECKSUM_ENABLED(inp, NETIF_CHECKSUM_SKIPVALID_TCP)) &&
+	(p->flags & PBUF_FLAG_DATA_VALID)) {
+      /* We received a packet marked as valid, skip checks */
+      LWIP_DEBUGF(TCP_INPUT_DEBUG, ("tcp_input: packet marked as valid, skip checksum validation\n"));
+      goto chkvalid;
+    }
+#endif /* CHECKSUM_SKIPVALID_TCP */
 #if CHECKSUM_PARTIAL_TCP
     if ((!LWIP_CHECKSUM_CTRL_PER_NETIF ||
          NETIF_CHECKSUM_ENABLED(inp, NETIF_CHECKSUM_PARTIAL_TCP)) &&
@@ -196,9 +205,9 @@ tcp_input(struct pbuf *p, struct netif *inp)
       goto dropped;
     }
   }
-#if CHECKSUM_PARTIAL_TCP
+#if CHECKSUM_SKIPVALID_TCP || CHECKSUM_PARTIAL_TCP
 chkvalid:
-#endif /* CHECKSUM_PARTIAL_TCP */
+#endif /* CHECKSUM_SKIPVALID_TCP || CHECKSUM_PARTIAL_TCP */
 #endif /* CHECKSUM_CHECK_TCP */
 
   /* sanity-check header length */
