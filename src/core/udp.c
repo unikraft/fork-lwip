@@ -330,6 +330,14 @@ udp_input(struct pbuf *p, struct netif *inp)
     LWIP_DEBUGF(UDP_DEBUG | LWIP_DBG_TRACE, ("udp_input: calculating checksum\n"));
 #if CHECKSUM_CHECK_UDP
     IF__NETIF_CHECKSUM_ENABLED(inp, NETIF_CHECKSUM_CHECK_UDP) {
+#if CHECKSUM_SKIPVALID_UDP
+      if ((!LWIP_CHECKSUM_CTRL_PER_NETIF ||
+           NETIF_CHECKSUM_ENABLED(inp, NETIF_CHECKSUM_SKIPVALID_UDP)) &&
+          (p->flags & PBUF_FLAG_DATA_VALID)) {
+          /* DATA_VALID flag was set by netif for this pbuf */
+          goto chkvalid;
+      }
+#endif
 #if CHECKSUM_PARTIAL_UDP
     if ((!LWIP_CHECKSUM_CTRL_PER_NETIF ||
          NETIF_CHECKSUM_ENABLED(inp, NETIF_CHECKSUM_PARTIAL_UDP)) &&
@@ -385,9 +393,9 @@ udp_input(struct pbuf *p, struct netif *inp)
         }
       }
     }
-#if CHECKSUM_PARTIAL_UDP
+#if CHECKSUM_PARTIAL_UDP || CHECKSUM_SKIPVALID_UDP
 chkvalid:
-#endif /* CHECKSUM_PARTIAL_UDP */
+#endif /* CHECKSUM_PARTIAL_UDP || CHECKSUM_SKIPVALID_UDP */
 #endif /* CHECKSUM_CHECK_UDP */
     if (pbuf_remove_header(p, UDP_HLEN)) {
       /* Can we cope with this failing? Just assert for now */

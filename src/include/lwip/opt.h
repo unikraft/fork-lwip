@@ -2380,6 +2380,19 @@
 #endif
 
 /**
+ * Turn on skipping of checksum checking for UDP headers of pbufs marked with PBUF_FLAG_DATA_VALID
+ * when LWIP_CHECKSUM_PARTIAL is on and CHECKSUM_CHECK_UDP is set.
+ * Otherwise, we disable checksum shortcuts.
+ */
+#if !defined CHECKSUM_SKIPVALID_UDP || defined __DOXYGEN__
+#if LWIP_CHECKSUM_PARTIAL && (CHECKSUM_CHECK_UDP || LWIP_CHECKSUM_CTRL_PER_NETIF)
+#define CHECKSUM_SKIPVALID_UDP          1
+#else
+#define CHECKSUM_SKIPVALID_UDP          0
+#endif
+#endif
+
+/**
  * Turn on partial checksum generation for TCP headers when LWIP_CHECKSUM_PARTIAL is on
  * and CHECKSUM_GEN_TCP is set. Otherwise, we disable partial checksumming.
  */
