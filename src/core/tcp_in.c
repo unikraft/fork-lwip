@@ -158,6 +158,33 @@ tcp_input(struct pbuf *p, struct netif *inp)
 
 #if CHECKSUM_CHECK_TCP
   IF__NETIF_CHECKSUM_ENABLED(inp, NETIF_CHECKSUM_CHECK_TCP) {
+#if CHECKSUM_PARTIAL_TCP
+    if ((!LWIP_CHECKSUM_CTRL_PER_NETIF ||
+         NETIF_CHECKSUM_ENABLED(inp, NETIF_CHECKSUM_PARTIAL_TCP)) &&
+        (p->flags & PBUF_FLAG_CSUM_PARTIAL)) {
+      /* We received a packet marked with incomplete checksum */
+      LWIP_DEBUGF(TCP_INPUT_DEBUG,
+                  ("tcp_input: received packet with partial checksum (csum_start=%"S32_F", csum_offset=%"U16_F")\n",
+                   p->csum_start, p->csum_offset));
+
+      /* If csum_start and csum_offset are given, check that they
+       * point to the checksum field of the TCP header
+       */
+      if (((p->csum_start != 0x0) || (p->csum_offset != 0x0))
+          && (((p->csum_start + p->csum_offset) != TCPH_CHKSUM_OFFSET))) {
+           LWIP_DEBUGF(TCP_INPUT_DEBUG,
+                       ("tcp_input: packet discarded due to invalid checksum location\n"));
+           TCP_STATS_INC(tcp.chkerr);
+           goto dropped;
+        }
+
+      /* We assume that an incomplete checksummed packet results from
+       * an in-memory communication that can be found in virtualized
+       * environments, like, host-to-guest, guest-to-host, guest-to-guest
+       */
+      goto chkvalid;
+    }
+#endif /* CHECKSUM_PARTIAL_TCP */
     /* Verify TCP checksum. */
     u16_t chksum = ip_chksum_pseudo(p, IP_PROTO_TCP, p->tot_len,
                                     ip_current_src_addr(), ip_current_dest_addr());
@@ -169,6 +196,9 @@ tcp_input(struct pbuf *p, struct netif *inp)
       goto dropped;
     }
   }
+#if CHECKSUM_PARTIAL_TCP
+chkvalid:
+#endif /* CHECKSUM_PARTIAL_TCP */
 #endif /* CHECKSUM_CHECK_TCP */
 
   /* sanity-check header length */
