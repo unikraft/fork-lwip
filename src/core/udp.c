@@ -922,6 +922,9 @@ udp_sendto_if_src_chksum(struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *d
 #endif /* CHECKSUM_GEN_UDP */
     ip_proto = IP_PROTO_UDP;
   }
+#if UDP_CHECKSUM_PARTIAL
+  seg->p->flags |= PBUF_FLAG_DATA_VALID;
+#endif /* UDP_CHECKSUM_PARTIAL */
 
   /* Determine TTL to use */
 #if LWIP_MULTICAST_TX_OPTIONS

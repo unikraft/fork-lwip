@@ -1618,6 +1618,9 @@ tcp_output_segment(struct tcp_seg *seg, struct tcp_pcb *pcb, struct netif *netif
 #endif /* TCP_CHECKSUM_ON_COPY */
   }
 #endif /* CHECKSUM_GEN_TCP */
+#if TCP_CHECKSUM_PARTIAL
+  seg->p->flags |= PBUF_FLAG_DATA_VALID;
+#endif /* TCP_CHECKSUM_PARTIAL */
   TCP_STATS_INC(tcp.xmit);
 
   NETIF_SET_HINTS(netif, &(pcb->netif_hints));
@@ -1955,7 +1958,7 @@ tcp_output_control_segment(const struct tcp_pcb *pcb, struct pbuf *p,
         struct tcp_hdr *tcphdr = (struct tcp_hdr *)p->payload;
         tcphdr->chksum = ip_chksum_pseudohdr(IP_PROTO_TCP, p->tot_len,
 					     src, dst);
-        p->flags |= PBUF_FLAG_CSUM_PARTIAL;
+        p->flags |= PBUF_FLAG_CSUM_PARTIAL | PBUF_FLAG_DATA_VALID;
         p->csum_start = 0;
         p->csum_offset = TCPH_CHKSUM_OFFSET;
       } else
