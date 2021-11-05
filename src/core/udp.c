@@ -330,6 +330,29 @@ udp_input(struct pbuf *p, struct netif *inp)
     LWIP_DEBUGF(UDP_DEBUG | LWIP_DBG_TRACE, ("udp_input: calculating checksum\n"));
 #if CHECKSUM_CHECK_UDP
     IF__NETIF_CHECKSUM_ENABLED(inp, NETIF_CHECKSUM_CHECK_UDP) {
+#if CHECKSUM_PARTIAL_UDP
+    if ((!LWIP_CHECKSUM_CTRL_PER_NETIF ||
+         NETIF_CHECKSUM_ENABLED(inp, NETIF_CHECKSUM_PARTIAL_UDP)) &&
+        (p->flags & PBUF_FLAG_CSUM_PARTIAL)) {
+      /* We received a packet marked with incomplete checksum */
+      LWIP_DEBUGF(UDP_DEBUG,
+                  ("udp_input: received packet with partial checksum (csum_start=%"S32_F", csum_offset=%"U16_F")\n",
+                   p->csum_start, p->csum_offset));
+
+      /* If csum_start and csum_offset are given, check that they
+       * point to the checksum field of the UDP header
+       */
+      if (((p->csum_start != 0x0) || (p->csum_offset != 0x0))
+          && (((p->csum_start + p->csum_offset) != UDPH_CHKSUM_OFFSET)))
+           goto chkerr;
+
+      /* We assume that an incomplete checksummed packet results from
+       * an in-memory communication that can be found in virtualized
+       * environments, like, host-to-guest, guest-to-host, guest-to-guest
+       */
+      goto chkvalid;
+    }
+#endif /* CHECKSUM_PARTIAL_UDP */
 #if LWIP_UDPLITE
       if (ip_current_header_proto() == IP_PROTO_UDPLITE) {
         /* Do the UDP Lite checksum */
@@ -362,6 +385,9 @@ udp_input(struct pbuf *p, struct netif *inp)
         }
       }
     }
+#if CHECKSUM_PARTIAL_UDP
+chkvalid:
+#endif /* CHECKSUM_PARTIAL_UDP */
 #endif /* CHECKSUM_CHECK_UDP */
     if (pbuf_remove_header(p, UDP_HLEN)) {
       /* Can we cope with this failing? Just assert for now */
