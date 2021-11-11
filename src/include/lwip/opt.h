@@ -2357,6 +2357,65 @@
 #if !defined LWIP_CHECKSUM_ON_COPY || defined __DOXYGEN__
 #define LWIP_CHECKSUM_ON_COPY           0
 #endif
+
+/**
+ * LWIP_CHECKSUM_PARTIAL==1: Extend pbufs to support handling packets with
+ * partial computed checksums and the ability to mark packets that contain
+ * an already validated checksums.
+ */
+#if !defined LWIP_CHECKSUM_PARTIAL || defined __DOXYGEN__
+#define LWIP_CHECKSUM_PARTIAL           0
+#endif
+
+/**
+ * Turn on partial checksum generation for UDP headers when LWIP_CHECKSUM_PARTIAL is on
+ * and CHECKSUM_GEN_UDP is set. Otherwise, we disable partial checksumming.
+ */
+#if !defined CHECKSUM_PARTIAL_UDP || defined __DOXYGEN__
+#if LWIP_CHECKSUM_PARTIAL && (CHECKSUM_GEN_UDP || LWIP_CHECKSUM_CTRL_PER_NETIF)
+#define CHECKSUM_PARTIAL_UDP            1
+#else
+#define CHECKSUM_PARTIAL_UDP            0
+#endif
+#endif
+
+/**
+ * Turn on skipping of checksum checking for UDP headers of pbufs marked with PBUF_FLAG_DATA_VALID
+ * when LWIP_CHECKSUM_PARTIAL is on and CHECKSUM_CHECK_UDP is set.
+ * Otherwise, we disable checksum shortcuts.
+ */
+#if !defined CHECKSUM_SKIPVALID_UDP || defined __DOXYGEN__
+#if LWIP_CHECKSUM_PARTIAL && (CHECKSUM_CHECK_UDP || LWIP_CHECKSUM_CTRL_PER_NETIF)
+#define CHECKSUM_SKIPVALID_UDP          1
+#else
+#define CHECKSUM_SKIPVALID_UDP          0
+#endif
+#endif
+
+/**
+ * Turn on partial checksum generation for TCP headers when LWIP_CHECKSUM_PARTIAL is on
+ * and CHECKSUM_GEN_TCP is set. Otherwise, we disable partial checksumming.
+ */
+#if !defined CHECKSUM_PARTIAL_TCP || defined __DOXYGEN__
+#if LWIP_CHECKSUM_PARTIAL && (CHECKSUM_GEN_TCP || LWIP_CHECKSUM_CTRL_PER_NETIF)
+#define CHECKSUM_PARTIAL_TCP            1
+#else
+#define CHECKSUM_PARTIAL_TCP            0
+#endif
+#endif
+
+/**
+ * Turn on skipping of checksum checking for TCP headers of pbufs marked with PBUF_FLAG_DATA_VALID
+ * when LWIP_CHECKSUM_PARTIAL is on and CHECKSUM_CHECK_TCP is set.
+ * Otherwise, we disable checksum shortcuts.
+ */
+#if !defined CHECKSUM_SKIPVALID_TCP || defined __DOXYGEN__
+#if LWIP_CHECKSUM_PARTIAL && (CHECKSUM_CHECK_TCP || LWIP_CHECKSUM_CTRL_PER_NETIF)
+#define CHECKSUM_SKIPVALID_TCP          1
+#else
+#define CHECKSUM_SKIPVALID_TCP          0
+#endif
+#endif
 /**
  * @}
  */

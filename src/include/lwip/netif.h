@@ -145,7 +145,13 @@ enum lwip_internal_netif_client_data_index
 #define NETIF_CHECKSUM_CHECK_TCP    0x0400
 #define NETIF_CHECKSUM_CHECK_ICMP   0x0800
 #define NETIF_CHECKSUM_CHECK_ICMP6  0x1000
-#define NETIF_CHECKSUM_ENABLE_ALL   0xFFFF
+#if LWIP_CHECKSUM_PARTIAL
+#define NETIF_CHECKSUM_PARTIAL_UDP  0x2000
+#define NETIF_CHECKSUM_PARTIAL_TCP  0x4000
+#define NETIF_CHECKSUM_SKIPVALID_UDP 0x8000
+#define NETIF_CHECKSUM_SKIPVALID_TCP 0x10000
+#endif /* LWIP_CHECKSUM_PARTIAL */
+#define NETIF_CHECKSUM_ENABLE_ALL   0x1FFF
 #define NETIF_CHECKSUM_DISABLE_ALL  0x0000
 #endif /* LWIP_CHECKSUM_CTRL_PER_NETIF */
 
@@ -329,7 +335,7 @@ struct netif {
   const char*  hostname;
 #endif /* LWIP_NETIF_HOSTNAME */
 #if LWIP_CHECKSUM_CTRL_PER_NETIF
-  u16_t chksum_flags;
+  u32_t chksum_flags;
 #endif /* LWIP_CHECKSUM_CTRL_PER_NETIF*/
   /** maximum transfer unit (in bytes) */
   u16_t mtu;
@@ -396,11 +402,12 @@ struct netif {
 #if LWIP_CHECKSUM_CTRL_PER_NETIF
 #define NETIF_SET_CHECKSUM_CTRL(netif, chksumflags) do { \
   (netif)->chksum_flags = chksumflags; } while(0)
-#define IF__NETIF_CHECKSUM_ENABLED(netif, chksumflag) if (((netif) == NULL) || (((netif)->chksum_flags & (chksumflag)) != 0))
+#define NETIF_CHECKSUM_ENABLED(netif, chksumflag) (((netif) == NULL) || (((netif)->chksum_flags & (chksumflag)) != 0))
 #else /* LWIP_CHECKSUM_CTRL_PER_NETIF */
-#define NETIF_SET_CHECKSUM_CTRL(netif, chksumflags)
-#define IF__NETIF_CHECKSUM_ENABLED(netif, chksumflag)
+#define NETIF_CHECKSUM_ENABLED(netif, chksumflag) 0
+#define NETIF_SET_CHECKSUM_CTRL(netif, chksumflags) do {} while(0)
 #endif /* LWIP_CHECKSUM_CTRL_PER_NETIF */
+#define IF__NETIF_CHECKSUM_ENABLED(netif, chksumflag) if (!LWIP_CHECKSUM_CTRL_PER_NETIF || NETIF_CHECKSUM_ENABLED(netif, chksumflag))
 
 #if LWIP_SINGLE_NETIF
 #define NETIF_FOREACH(netif) if (((netif) = netif_default) != NULL)
