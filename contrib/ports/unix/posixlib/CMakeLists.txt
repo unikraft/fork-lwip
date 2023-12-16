@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(liblwip
     VERSION 2.2.0
-    DESCRIPTION "lwip library for linux"
-    HOMEPAGE_URL "http://wiki.virtualsquare.org"
+    DESCRIPTION "lwip library for POSIX systems"
+    HOMEPAGE_URL "https://savannah.nongnu.org/projects/lwip/"
     LANGUAGES C)
 
 include(GNUInstallDirs)
@@ -10,7 +10,7 @@ include(CheckIncludeFile)
 
 set (BUILD_SHARED_LIBS ON)
 
-if (NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" AND NOT CMAKE_SYSTEM_NAME STREQUAL "GNU")
     message(FATAL_ERROR "Lwip shared library is only working on Linux or the Hurd")
 endif()
 

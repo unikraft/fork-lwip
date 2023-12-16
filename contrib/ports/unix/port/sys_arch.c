@@ -532,7 +532,7 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
   if (ret == ETIMEDOUT) {
     return SYS_ARCH_TIMEOUT;
 #ifdef LWIP_UNIX_HURD
-    /* On the Hurd, ret == 1 means the RPC has been cancelled.
+    /* On the Hurd, ret == EINTR means the RPC has been cancelled.
      * The thread is awakened (not terminated) and execution must continue */
   } else if (ret == EINTR) {
     return SYS_ARCH_INTR;

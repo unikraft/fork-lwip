@@ -24,8 +24,8 @@
  * OF SUCH DAMAGE.
  */
 
-#ifndef HURD_LWIP_POSIX_INET_H
-#define HURD_LWIP_POSIX_INET_H
+#ifndef POSIX_LWIP_POSIX_INET_H
+#define POSIX_LWIP_POSIX_INET_H
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -73,4 +73,4 @@ struct in_pktinfo {
 }
 #endif
 
-#endif /* HURD_LWIP_POSIX_INET_H */
+#endif /* POSIX_LWIP_POSIX_INET_H */

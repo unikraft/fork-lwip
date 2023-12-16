@@ -24,8 +24,8 @@
  * OF SUCH DAMAGE.
  */
 
-#ifndef UNIX_LWIP_LWIPOPTS_H
-#define UNIX_LWIP_LWIPOPTS_H
+#ifndef POSIX_LWIP_LWIPOPTS_H
+#define POSIX_LWIP_LWIPOPTS_H
 
 /* An OS is present */
 #define NO_SYS    0
@@ -177,4 +177,4 @@ void sys_unlock_tcpip_core(void);
 #define IP6_DEBUG         LWIP_DBG_OFF
 #endif
 
-#endif /* UNIX_LWIP_LWIPOPTS_H */
+#endif /* POSIX_LWIP_LWIPOPTS_H */
