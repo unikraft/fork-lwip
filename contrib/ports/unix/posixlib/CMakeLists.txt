@@ -56,6 +56,11 @@ endif()
 find_library(LIBPTHREAD pthread)
 target_link_libraries(lwip ${LIBPTHREAD})
 
+include(${LWIP_DIR}/src/Filelists.cmake)
+if (TARGET lwipdocs)
+  add_dependencies(lwip lwipdocs)
+endif()
+
 install(TARGETS lwip 
 		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
