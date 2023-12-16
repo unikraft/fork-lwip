@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@/lwip
+
+Name: liblwip
+Description: LwIP shared library
+Version: @LWIP_VERSION_MAJOR@.@LWIP_VERSION_MINOR@.@LWIP_VERSION_REVISION@
+Libs: -L${libdir} -llwip
+Cflags: -I${includedir}

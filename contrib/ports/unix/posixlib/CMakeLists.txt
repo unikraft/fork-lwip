@@ -61,6 +61,9 @@ if (TARGET lwipdocs)
   add_dependencies(lwip lwipdocs)
 endif()
 
+# Generate pkg-config file
+CONFIGURE_FILE("${LWIP_CONTRIB_DIR}/ports/unix/posixlib/lwip.pc.in" "${LWIP_CONTRIB_DIR}/ports/unix/posixlib/lwip.pc" @ONLY)
+
 install(TARGETS lwip 
 		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
@@ -93,6 +96,9 @@ install(DIRECTORY "${LWIP_DIR}/contrib/ports/unix/posixlib/include/posix"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/lwip"
     FILES_MATCHING PATTERN "*.h"
 )
+
+install (FILES ${LWIP_CONTRIB_DIR}/ports/unix/posixlib/lwip.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${PROJECT_SOURCE_DIR}/Uninstall.cmake")
