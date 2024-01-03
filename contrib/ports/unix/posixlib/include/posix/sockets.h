@@ -43,26 +43,11 @@ extern "C" {
 #endif
 
 #ifdef _HAVE_SA_LEN
-#define HAVE_SA_LEN	_HAVE_SA_LEN
+#define LWIP_SOCKET_HAVE_SA_LEN     _HAVE_SA_LEN
 #else
-#define HAVE_SA_LEN	0
+#define LWIP_SOCKET_HAVE_SA_LEN     0
 #endif /* _HAVE_SA_LEN */
 
-/* Address length safe read and write */
-#if HAVE_SA_LEN
-#define IP4ADDR_SOCKADDR_SET_LEN(sin) \
-      (sin)->sin_len = sizeof(struct sockaddr_in)
-#define IP6ADDR_SOCKADDR_SET_LEN(sin6) \
-      (sin6)->sin6_len = sizeof(struct sockaddr_in6)
-#define IPADDR_SOCKADDR_GET_LEN(addr) \
-      (addr)->sa.sa_len
-#else
-#define IP4ADDR_SOCKADDR_SET_LEN(addr)
-#define IP6ADDR_SOCKADDR_SET_LEN(addr)
-#define IPADDR_SOCKADDR_GET_LEN(addr) \
-      ((addr)->sa.sa_family == AF_INET ? sizeof(struct sockaddr_in) \
-        : ((addr)->sa.sa_family == AF_INET6 ? sizeof(struct sockaddr_in6) : 0))
-#endif /* HAVE_SA_LEN */
 
 #define SIN_ZERO_LEN	sizeof (struct sockaddr) - \
                            __SOCKADDR_COMMON_SIZE - \
