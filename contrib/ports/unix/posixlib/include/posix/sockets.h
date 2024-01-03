@@ -31,7 +31,12 @@
 #include <poll.h>
 #include <errno.h>
 #include LWIP_SOCKET_EXTERNAL_HEADER_INET_H
+
+#ifdef LWIP_UNIX_HURD
+typedef int msg_iovlen_t;
+#else
 typedef size_t msg_iovlen_t;
+#endif /* LWIP_UNIX_HURD */
 
 #ifdef __cplusplus
 extern "C" {
