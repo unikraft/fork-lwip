@@ -33,7 +33,6 @@
 /* Sockets API config */
 #define LWIP_COMPAT_SOCKETS       0
 #define LWIP_SOCKET_OFFSET        1
-#define LWIP_POLL                 1
 
 /* User posix socket headers */
 #define LWIP_SOCKET_EXTERNAL_HEADERS            1
