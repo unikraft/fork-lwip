@@ -43,8 +43,6 @@
 #define LWIP_UNIX_OPENBSD
 #elif defined __FreeBSD__
 #define LWIP_UNIX_FREEBSD
-#elif defined __FreeBSD_kernel__ && __GLIBC__
-#define LWIP_UNIX_KFREEBSD
 #elif defined __CYGWIN__
 #define LWIP_UNIX_CYGWIN
 #elif defined __GNU__
@@ -60,7 +58,7 @@ extern "C" {
 
 #define LWIP_ERRNO_INCLUDE <errno.h>
 
-#if defined(LWIP_UNIX_LINUX) || defined(LWIP_UNIX_HURD) || defined(LWIP_UNIX_KFREEBSD)
+#if defined(LWIP_UNIX_LINUX) || defined(LWIP_UNIX_HURD)
 #define LWIP_ERRNO_STDINCLUDE	1
 #endif
 
