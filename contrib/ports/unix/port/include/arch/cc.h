@@ -75,7 +75,7 @@ extern unsigned int lwip_port_rand(void);
 typedef __kernel_fd_set fd_set;
 #endif
 
-#if defined(LWIP_UNIX_MACH)
+#if defined(LWIP_UNIX_MACH) || defined(LWIP_UNIX_LINUX) || defined(LWIP_UNIX_HURD)
 /* sys/types.h and signal.h bring in Darwin byte order macros. pull the
    header here and disable LwIP's version so that apps still can get
    the macros via LwIP headers and use system headers */

@@ -38,7 +38,6 @@
 #define LWIP_SOCKET_EXTERNAL_HEADERS            1
 #define LWIP_SOCKET_EXTERNAL_HEADER_SOCKETS_H   "posix/sockets.h"
 #define LWIP_SOCKET_EXTERNAL_HEADER_INET_H      "posix/inet.h"
-#define LWIP_DONT_PROVIDE_BYTEORDER_FUNCTIONS   1
 
 /* Use Glibc malloc()/free() */
 #define MEM_LIBC_MALLOC   1
