@@ -110,6 +110,11 @@
 #define LWIP_ICMP6            1
 #define LWIP_IPV6_MLD         1
 
+/* Let DHCP packets pass through unconfigured interfaces */
+#define LWIP_HOOK_FILENAME "lwip_hooks.h"
+#define LWIP_HOOK_IP4_ROUTE_SRC dhcp_ip4_route_src
+#define LWIP_IP_ACCEPT_UDP_PORT(dst_port) ((dst_port) == PP_NTOHS(LWIP_IANA_PORT_DHCP_SERVER) || (dst_port) == PP_NTOHS(LWIP_IANA_PORT_DHCP_CLIENT))
+
 /* Don't abort the whole stack when an error is detected */
 #define LWIP_NOASSERT_ON_ERROR   1
 

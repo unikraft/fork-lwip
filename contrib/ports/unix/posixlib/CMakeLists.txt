@@ -39,9 +39,12 @@ set (LWIP_EXCLUDE_SLIPIF TRUE)
 include(${LWIP_CONTRIB_DIR}/ports/unix/Filelists.cmake)
 include(${LWIP_DIR}/src/Filelists.cmake)
 if (LIB_VDEPLUGOK AND INCLUDE_VDEPLUGOK)
-set(lwipnoapps_SRCS ${lwipnoapps_SRCS}
+set(lwipcontribportunixnetifs_SRCS ${lwipcontribportunixnetifs_SRCS}
    ${LWIP_DIR}/contrib/ports/unix/port/netif/vdeif.c)
 endif()
+
+set(lwipcontribportunix_SRCS ${lwipcontribportunix_SRCS}
+   ${LWIP_DIR}/contrib/ports/unix/posixlib/lwip_hooks.c)
 
 add_library(lwip ${lwipnoapps_SRCS} ${lwipcontribportunix_SRCS} ${lwipcontribportunixnetifs_SRCS})
 target_compile_options(lwip PRIVATE ${LWIP_COMPILER_FLAGS})
@@ -102,4 +105,3 @@ install (FILES ${LWIP_CONTRIB_DIR}/ports/unix/posixlib/lwip.pc
 
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${PROJECT_SOURCE_DIR}/Uninstall.cmake")
-
